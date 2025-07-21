@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ client.name }}'s Profile - Tailur{% endblock %}
+
+{% block content %}
+<div class="client-profile-container">
+    <div class="client-profile-card">
+        <!-- Client Header Section -->
+        <div class="client-header mb-5">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h2 class="client-name">
+                        <i data-feather="user" class="me-2"></i>
+                        {{ client.name|title }}'s Profile
+                    </h2>
+                    <p class="client-since text-muted">
+                        Client since {{ client.date_added|date:"F Y" }}
+                    </p>
+                </div>
+                <a href="{% url 'list_clients' %}" class="btn btn-outline-secondary">
+                    <i data-feather="arrow-left" class="me-1"></i> Back to Clients
+                </a>
+            </div>
+
+            {% if messages %}
+            <div class="alert-messages mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Client Details Section -->
+        <div class="row mb-5">
+            <div class="col-md-6">
+                <div class="profile-section">
+                    <h5 class="section-title">
+                        <i data-feather="info" class="me-2"></i>
+                        Personal Details
+                    </h5>
+                    <div class="profile-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Full Name</span>
+                            <span class="detail-value">{{ client.name|title }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Phone Number</span>
+                            <span class="detail-value">{{ client.phone }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Gender</span>
+                            <span class="detail-value">{{ client.gender }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Address</span>
+                            <span class="detail-value">{{ client.address|default:"Not provided" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="profile-section">
+                    <h5 class="section-title">
+                        <i data-feather="clipboard" class="me-2"></i>
+                        Client Statistics
+                    </h5>
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ total_orders }}</div>
+                            <div class="stat-label">Total Orders</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ active_orders }}</div>
+                            <div class="stat-label">Active Orders</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">₦{{ total_spent|default:"0" }}</div>
+                            <div class="stat-label">Total Spent</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Measurements Section -->
+        <div class="profile-section mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="section-title mb-0">
+                    <i data-feather="ruler" class="me-2"></i>
+                    Body Measurements
+                </h5>
+                <a href="{% url 'add_measurements' client.id %}" class="btn btn-sm btn-outline-primary">
+                    <i data-feather="{% if measurements %}edit-2{% else %}plus{% endif %}" class="me-1"></i>
+                    {% if measurements %}Edit{% else %}Add{% endif %} Measurements
+                </a>
+            </div>
+
+            {% if measurements %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="measurement-group">
+                        <h6 class="measurement-group-title">Upper Body</h6>
+                        <div class="measurement-item">
+                            <span class="measurement-label">Bust</span>
+                            <span class="measurement-value">{{ measurements.bust }} in</span>
+                        </div>
+                        <div class="measurement-item">
+                            <span class="measurement-label">Waist</span>
+                            <span class="measurement-value">{{ measurements.waist }} in</span>
+                        </div>
+                        <div class="measurement-item">
+                            <span class="measurement-label">Shoulder</span>
+                            <span class="measurement-value">{{ measurements.shoulder }} in</span>
+                        </div>
+                        <div class="measurement-item">
+                            <span class="measurement-label">Sleeve Length</span>
+                            <span class="measurement-value">{{ measurements.sleeve_length }} in</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="measurement-group">
+                        <h6 class="measurement-group-title">Lower Body</h6>
+                        <div class="measurement-item">
+                            <span class="measurement-label">Hips</span>
+                            <span class="measurement-value">{{ measurements.hips }} in</span>
+                        </div>
+                        <div class="measurement-item">
+                            <span class="measurement-label">Trouser Length</span>
+                            <span class="measurement-value">{{ measurements.trouser_length }} in</span>
+                        </div>
+                        <div class="measurement-item">
+                            <span class="measurement-label">Top Length</span>
+                            <span class="measurement-value">{{ measurements.top_length }} in</span>
+                        </div>
+                        <div class="measurement-item">
+                            <span class="measurement-label">Neck</span>
+                            <span class="measurement-value">{{ measurements.neck }} in</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i data-feather="ruler" class="empty-icon"></i>
+                <p class="empty-text">No measurements recorded yet</p>
+                <a href="{% url 'add_measurements' client.id %}" class="btn btn-primary">
+                    <i data-feather="plus" class="me-1"></i> Add Measurements
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Client Actions -->
+        <div class="profile-actions">
+            <a href="{% url 'add_order' %}?client_id={{ client.id }}" class="btn btn-primary me-2">
+                <i data-feather="plus" class="me-1"></i> New Order
+            </a>
+            <a href="" class="btn btn-outline-secondary me-2">
+                <i data-feather="edit" class="me-1"></i> Edit Profile
+            </a>
+            <a href="#" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteClientModal">
+                <i data-feather="trash-2" class="me-1"></i> Delete Client
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteClientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete {{ client.name|title }}'s profile? This action cannot be undone.</p>
+                <p class="text-danger"><strong>Warning:</strong> All associated orders and measurements will also be deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete Client</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .client-profile-container {
+        padding: 2rem;
+        background-color: var(--light-color);
+        min-height: calc(100vh - 120px);
+    }
+    
+    .client-profile-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .client-name {
+        color: var(--primary-color);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+    
+    .client-name i {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .client-since {
+        font-size: 0.9rem;
+    }
+    
+    .profile-section {
+        background-color: rgba(200, 167, 151, 0.05);
+        padding: 1.5rem;
+        border-radius: 8px;
+        border-left: 3px solid var(--secondary-color);
+        height: 100%;
+    }
+    
+    .section-title {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title i {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+    
+    .detail-label {
+        font-weight: 500;
+        color: var(--dark-color);
+    }
+    
+    .detail-value {
+        color: var(--accent-color);
+    }
+    
+    .profile-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--secondary-color);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .measurement-group {
+        background-color: white;
+        padding: 1.25rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        height: 100%;
+    }
+    
+    .measurement-group-title {
+        color: var(--primary-color);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .measurement-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+    }
+    
+    .measurement-label {
+        font-weight: 500;
+        color: var(--dark-color);
+    }
+    
+    .measurement-value {
+        color: var(--accent-color);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .empty-icon {
+        width: 48px;
+        height: 48px;
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+    }
+    
+    .empty-text {
+        color: var(--secondary-color);
+        margin-bottom: 1.5rem;
+    }
+    
+    .profile-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    @media (max-width: 768px) {
+        .client-profile-container {
+            padding: 1rem;
+        }
+        
+        .client-profile-card {
+            padding: 1.5rem;
+        }
+        
+        .profile-stats {
+            grid-template-columns: 1fr;
+        }
+        
+        .profile-actions {
+            flex-direction: column;
+        }
+        
+        .profile-actions .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        feather.replace();
+    });
+</script>
+{% endblock %}

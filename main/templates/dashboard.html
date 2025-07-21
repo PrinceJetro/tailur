@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Tailur{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header mb-5">
+        <h1 class="display-5 fw-bold mb-3">Tailor Dashboard</h1>
+        <p class="lead text-muted">Welcome back! Here's what's happening with your business today.</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-5">
+        <div class="col-md-3 mb-4">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="stat-title">TOTAL CLIENTS</h6>
+                            <h3 class="stat-value">{{ total_clients }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i data-feather="users" class="text-primary"></i>
+                        </div>
+                    </div>
+                    <div class="stat-change positive">
+                        <i data-feather="trending-up"></i> {{ new_clients_this_month }} new this month
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="stat-title">ACTIVE ORDERS</h6>
+                            <h3 class="stat-value">{{ active_orders }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i data-feather="clipboard" class="text-warning"></i>
+                        </div>
+                    </div>
+                    <div class="stat-change {% if orders_change > 0 %}positive{% else %}negative{% endif %}">
+                        <i data-feather="{% if orders_change > 0 %}trending-up{% else %}trending-down{% endif %}"></i> 
+                        {{ orders_change }}% from last month
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="stat-title">REVENUE</h6>
+                            <h3 class="stat-value">₦{{ monthly_revenue }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <span class="text-success">₦</span>
+                        </div>
+                    </div>
+                    <div class="stat-change {% if revenue_change > 0 %}positive{% else %}negative{% endif %}">
+                        <i data-feather="{% if revenue_change > 0 %}trending-up{% else %}trending-down{% endif %}"></i> 
+                        {{ revenue_change }}% from last month
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="stat-title">UPCOMING DELIVERIES</h6>
+                            <h3 class="stat-value">{{ upcoming_deliveries }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i data-feather="calendar" class="text-danger"></i>
+                        </div>
+                    </div>
+                    <div class="stat-change">
+                        <i data-feather="clock"></i> Next 7 days
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-5">
+        <div class="col-md-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5>Monthly Orders</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="ordersChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5>Client Gender Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="genderChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders & Upcoming Deliveries -->
+    <div class="row mb-5">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Recent Orders</h5>
+                    <a href="{% url 'list_orders' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Style</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td>{{ order.client.name }}</td>
+                                    <td>{{ order.style_name }}</td>
+                                    <td>{{ order.due_date|date:"M d" }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if order.delivery_status == 'completed' %}success{% else %}warning{% endif %}">
+                                            {{ order.delivery_status|title }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Upcoming Deliveries</h5>
+                    <a href="{% url 'list_orders' %}?delivery_status=pending" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for order in upcoming_orders %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ order.client.name }}</h6>
+                                    <small class="text-muted">{{ order.style_name }} - ₦{{ order.price }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <small class="d-block text-{% if order.is_urgent %}danger{% else %}muted{% endif %}">
+                                        Due {{ order.due_date|date:"M d" }}
+                                    </small>
+                                    <a href="{% url 'list_orders' %}" class="btn btn-sm btn-outline-secondary mt-1">Details</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Clients -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Recent Clients</h5>
+                    <a href="{% url 'list_clients' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for client in recent_clients %}
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="client-card text-center">
+                                <div class="client-avatar mb-2">
+                                    <i data-feather="user" class="client-icon"></i>
+                                </div>
+                                <h6 class="mb-1">{{ client.name }}</h6>
+                                <small class="text-muted d-block">{{ client.phone }}</small>
+                                <small class="text-muted">Added {{ client.date_added|date:"M d" }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        padding: 2rem 0;
+    }
+    
+    .stat-card {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-title {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--secondary-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-color: rgba(94, 74, 58, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .stat-icon i {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .stat-change {
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .stat-change.positive {
+        color: #28a745;
+    }
+    
+    .stat-change.negative {
+        color: #dc3545;
+    }
+    
+    .stat-change i {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .client-card {
+        padding: 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .client-card:hover {
+        background-color: rgba(200, 167, 151, 0.1);
+    }
+    
+    .client-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: rgba(94, 74, 58, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+    
+    .client-icon {
+        width: 24px;
+        height: 24px;
+        color: var(--primary-color);
+    }
+    
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        feather.replace();
+        
+        // Orders Chart
+        const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+        const ordersChart = new Chart(ordersCtx, {
+            type: 'line',
+            data: {
+                labels: {{ month_labels|safe }},
+                datasets: [{
+                    label: 'Orders',
+                    data: {{ order_counts|safe }},
+                    backgroundColor: 'rgba(94, 74, 58, 0.1)',
+                    borderColor: 'rgba(94, 74, 58, 1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            display: true,
+                            color: "rgba(0, 0, 0, 0.05)"
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Gender Chart
+        const genderCtx = document.getElementById('genderChart').getContext('2d');
+        const genderChart = new Chart(genderCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Male', 'Female'],
+                datasets: [{
+                    data: {{ gender_distribution|safe }},
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 99, 132, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    });
+</script>
+{% endblock %}

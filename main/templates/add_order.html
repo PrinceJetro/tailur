@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Order - Tailur{% endblock %}
+
+{% block content %}
+<div class="order-form-container">
+    <div class="order-form-card">
+        <div class="order-form-header">
+            <div class="d-flex align-items-center mb-3">
+                <a href="{% url 'list_orders' %}" class="btn btn-outline-secondary me-3">
+                    <i data-feather="arrow-left"></i>
+                </a>
+                <h2 class="mb-0">
+                    <i data-feather="clipboard" class="me-2"></i>
+                    Create New Order
+                </h2>
+            </div>
+            <p class="text-muted">Enter all details for the new garment order</p>
+        </div>
+
+        {% if messages %}
+        <div class="alert-messages mb-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" class="order-form">
+            {% csrf_token %}
+            
+            <div class="row">
+                <!-- Client and Style Information -->
+                <div class="col-md-6">
+                    <div class="form-section mb-4">
+                        <h5 class="section-title">
+                            <i data-feather="user" class="me-2"></i>
+                            Client & Style Details
+                        </h5>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.client.id_for_label }}" class="form-label">Client</label>
+                            {{ form.client }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.style_name.id_for_label }}" class="form-label">Style Name</label>
+                            {{ form.style_name }}
+                            <small class="form-text text-muted">e.g., Slim Fit Suit, A-line Dress</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.fabric_type.id_for_label }}" class="form-label">Fabric Type</label>
+                            {{ form.fabric_type }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Details -->
+                <div class="col-md-6">
+                    <div class="form-section mb-4">
+                        <h5 class="section-title">
+                            <span class="me-2">₦</span>
+                            Order Details
+                        </h5>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.price.id_for_label }}" class="form-label">Price (₦)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₦</span>
+                                {{ form.price }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.due_date.id_for_label }}" class="form-label">Due Date</label>
+                            {{ form.due_date }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.delivery_status.id_for_label }}" class="form-label">Status</label>
+                            {{ form.delivery_status }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notes Section -->
+            <div class="form-section mb-4">
+                <h5 class="section-title">
+                    <i data-feather="edit-2" class="me-2"></i>
+                    Additional Notes
+                </h5>
+                <div class="mb-3">
+                    {{ form.notes }}
+                    <small class="form-text text-muted">Any special instructions or details</small>
+                </div>
+            </div>
+            
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i data-feather="save" class="me-2"></i> Create Order
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-form-container {
+        padding: 2rem;
+        background-color: var(--light-color);
+        min-height: calc(100vh - 120px);
+    }
+    
+    .order-form-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .order-form-header h2 {
+        color: var(--primary-color);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+    
+    .order-form-header h2 i {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .form-section {
+        background-color: rgba(200, 167, 151, 0.05);
+        padding: 1.5rem;
+        border-radius: 8px;
+        border-left: 3px solid var(--secondary-color);
+    }
+    
+    .section-title {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title i {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select, .form-textarea {
+        border: 1px solid var(--secondary-color);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+    }
+    
+    .form-control:focus, .form-select:focus, .form-textarea:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(94, 74, 58, 0.25);
+    }
+    
+    textarea.form-textarea {
+        min-height: 100px;
+    }
+    
+    .input-group-text {
+        background-color: var(--light-color);
+        border-color: var(--secondary-color);
+        color: var(--primary-color);
+        min-width: 50px;
+        justify-content: center;
+    }
+    
+    @media (max-width: 768px) {
+        .order-form-container {
+            padding: 1rem;
+        }
+        
+        .order-form-card {
+            padding: 1.5rem;
+        }
+    }
+
+    .form-textarea {
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize all form inputs with proper classes
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            if (input.tagName === 'SELECT') {
+                input.classList.add('form-select');
+            } else if (input.tagName === 'TEXTAREA') {
+                input.classList.add('form-textarea');
+            } else {
+                input.classList.add('form-control');
+            }
+        });
+        
+        // Initialize date picker
+        const dueDateField = document.getElementById('{{ form.due_date.id_for_label }}');
+        if (dueDateField) {
+            flatpickr(dueDateField, {
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                allowInput: true
+            });
+        }
+        
+        // Auto-focus first field
+        document.querySelector('input:not([type="hidden"])')?.focus();
+        
+        feather.replace();
+    });
+</script>
+{% endblock %}

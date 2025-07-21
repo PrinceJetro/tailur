@@ -1,0 +1,34 @@
+{
+"name": "Tailur - Tailoring Order Manager",
+  "short_name": "Tailur",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d6efd",
+  "orientation": "portrait",
+  "description": "Tailur helps tailors manage orders, track deliveries, and simplify customer interactions.",
+  "icons": [
+    {
+      "src": "https://xegkwmiemcaafvmqzlyw.supabase.co/storage/v1/object/public/tailur//tailur-logo-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://xegkwmiemcaafvmqzlyw.supabase.co/storage/v1/object/public/tailur//tailur-logo-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://xegkwmiemcaafvmqzlyw.supabase.co/storage/v1/object/public/tailur//tailur-logo-512.png",
+      "type": "image/png",
+      "sizes": "540x720",
+      "form_factor": "wide"
+    }
+  ],
+  "id": "./",
+  "dir": "ltr",
+  "lang": "en-US"
+}

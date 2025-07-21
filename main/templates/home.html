@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Home - Tailur{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section py-5 mb-5" style="background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), url('{% static 'images/fabric-texture.jpg' %}'); background-size: cover;">
+    <div class="container text-center py-5">
+        <h1 class="display-4 fw-bold mb-4" style="color: var(--primary-color);">Welcome to Tailur</h1>
+        <p class="lead mb-4" style="max-width: 700px; margin: 0 auto;">Manage your clients, measurements, and orders—all in one place.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'add_client' %}" class="btn btn-primary btn-lg px-4">
+                <i data-feather="user-plus" class="me-2"></i> Add Client
+            </a>
+            <a href="{% url 'add_order' %}" class="btn btn-outline-primary btn-lg px-4">
+                <i data-feather="plus-circle" class="me-2"></i> Create Order
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Actions -->
+<section class="quick-actions mb-5">
+    <div class="container">
+        <h2 class="h4 text-center mb-4" style="color: var(--primary-color);">Quick Actions</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <a href="{% url 'list_clients' %}" class="card quick-action-card h-100 text-decoration-none">
+                    <div class="card-body text-center p-4">
+                        <div class="icon-wrapper mb-3" style="background-color: rgba(94, 74, 58, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                            <i data-feather="users" style="color: var(--primary-color); width: 24px; height: 24px;"></i>
+                        </div>
+                        <h3 class="h5 mb-2" style="color: var(--primary-color);">View Clients</h3>
+                        <p class="text-muted mb-0">Access your client database</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'list_orders' %}" class="card quick-action-card h-100 text-decoration-none">
+                    <div class="card-body text-center p-4">
+                        <div class="icon-wrapper mb-3" style="background-color: rgba(94, 74, 58, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                            <i data-feather="clipboard" style="color: var(--primary-color); width: 24px; height: 24px;"></i>
+                        </div>
+                        <h3 class="h5 mb-2" style="color: var(--primary-color);">Manage Orders</h3>
+                        <p class="text-muted mb-0">Track all current orders</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="#" class="card quick-action-card h-100 text-decoration-none">
+                    <div class="card-body text-center p-4">
+                        <div class="icon-wrapper mb-3" style="background-color: rgba(94, 74, 58, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                            <i data-feather="bar-chart-2" style="color: var(--primary-color); width: 24px; height: 24px;"></i>
+                        </div>
+                        <h3 class="h5 mb-2" style="color: var(--primary-color);">Reports</h3>
+                        <p class="text-muted mb-0">View business insights</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tailor Tip of the Day -->
+<section class="tailor-tip mb-5">
+    <div class="container">
+        <div class="card border-0 shadow-sm" style="background-color: var(--secondary-color);">
+            <div class="card-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-2 text-center mb-3 mb-md-0">
+                        <i data-feather="lightbulb" style="width: 48px; height: 48px; color: var(--primary-color);"></i>
+                    </div>
+                    <div class="col-md-10">
+                        <h2 class="h4 mb-3" style="color: var(--primary-color);">Tailor's Tip of the Day</h2>
+                        <div id="tip-content">
+                            <p class="mb-0" style="color: var(--dark-color);">Always double-check measurements before cutting fabric to avoid costly mistakes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Activity (Optional) -->
+<section class="recent-activity mb-5">
+    <div class="container">
+        <h2 class="h4 text-center mb-4" style="color: var(--primary-color);">Recent Activity</h2>
+        <div class="card">
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i data-feather="user" class="me-2"></i> New client added: Sarah Johnson</span>
+                        <small class="text-muted">2 hours ago</small>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i data-feather="clipboard" class="me-2"></i> Order #1023 marked as completed</span>
+                        <small class="text-muted">1 day ago</small>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><span class="me-2">₦</span> Payment received for Order #1018</span>
+                        <small class="text-muted">2 days ago</small>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    
+    .quick-action-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(94, 74, 58, 0.1);
+    }
+    
+    .quick-action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .tailor-tip .card {
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Array of tailor tips (would ideally come from Django backend)
+    const tailorTips = [
+        "Always double-check measurements before cutting fabric to avoid costly mistakes.",
+        "Keep a fabric swatch book for clients to reference during consultations.",
+        "Schedule fittings in the morning when clients are less likely to be bloated.",
+        "Invest in quality thread—it makes all the difference in garment durability.",
+        "Take progress photos of complex projects to document your process.",
+        "Offer a small discount for referrals to grow your client base organically.",
+        "Always pre-wash fabrics to account for shrinkage before garment construction."
+    ];
+    
+    // Rotate tips daily (or could be random on each page load)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get day of year (0-365) to rotate tips daily
+        const now = new Date();
+        const start = new Date(now.getFullYear(), 0, 0);
+        const diff = now - start;
+        const oneDay = 1000 * 60 * 60 * 24;
+        const dayOfYear = Math.floor(diff / oneDay);
+        
+        const tipIndex = dayOfYear % tailorTips.length;
+        document.getElementById('tip-content').innerHTML = `<p class="mb-0" style="color: var(--dark-color);">${tailorTips[tipIndex]}</p>`;
+    });
+</script>
+{% endblock %}

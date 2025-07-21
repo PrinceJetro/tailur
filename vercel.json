@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "tailur/wsgi.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.9",
+        "includeFiles": [
+          "manifest.json",
+          "serviceworker.js",
+          "icons/*"
+        ]
+      }
+    }
+  ],
+  "routes": [
+
+    {
+      "src": "/serviceworker.js",
+      "dest": "/serviceworker.js",
+      "headers": {
+        "Content-Type": "application/javascript",
+        "Service-Worker-Allowed": "/"
+      }
+    },
+    {
+      "src": "/icons/(.*)",
+      "dest": "/icons/$1"
+    },
+    {
+      "src": "/static/(.*)",
+      "dest": "/tailur/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "tailur/wsgi.py",
+      "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+    },
+    {
+  "src": "/manifest.json",
+  "dest": "https://suuzqweiijplovliqlfy.supabase.co/storage/v1/object/public/Education//manifest.json",
+  "headers": {
+    "Content-Type": "application/manifest+json"
+  }
+}
+  ]
+}

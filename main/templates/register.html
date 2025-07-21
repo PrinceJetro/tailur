@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Register - Tailur{% endblock %}
+
+{% block content %}
+<div class="register-container d-flex align-items-center justify-content-center">
+    <div class="register-card">
+        <div class="text-center mb-5">
+            <i data-feather="user-plus" class="register-icon"></i>
+            <h2 class="register-title">Join Tailur</h2>
+            <p class="register-subtitle">Create your tailor management account</p>
+        </div>
+
+        {% if messages %}
+        <div class="alert-messages mb-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form method="POST" action="{% url 'register' %}" class="register-form">
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="first_name" class="form-label">First Name</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i data-feather="user"></i>
+                        </span>
+                        <input type="text" name="first_name" id="first_name" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="last_name" class="form-label">Last Name</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i data-feather="user"></i>
+                        </span>
+                        <input type="text" name="last_name" id="last_name" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i data-feather="at-sign"></i>
+                    </span>
+                    <input type="text" name="username" id="username" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i data-feather="mail"></i>
+                    </span>
+                    <input type="email" name="email" id="email" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i data-feather="lock"></i>
+                    </span>
+                    <input type="password" name="password" id="password" class="form-control" required>
+                    <button class="btn btn-outline-secondary toggle-password" type="button">
+                        <i data-feather="eye"></i>
+                    </button>
+                </div>
+                <div class="form-text">Use 8 or more characters with a mix of letters, numbers & symbols</div>
+            </div>
+
+            {% if form.errors %}
+                <div class="alert alert-danger mb-4">
+                    <i data-feather="alert-circle" class="me-2"></i>
+                    Please correct the errors below and try again.
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <div class="small mt-2">{{ error }}</div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i data-feather="edit" class="me-2"></i> Create Account
+                </button>
+            </div>
+
+            <div class="terms-agreement text-center small text-muted mb-4">
+                By registering, you agree to our <a href="#" class="text-decoration-none">Terms</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>
+            </div>
+        </form>
+
+        <div class="register-footer text-center mt-3">
+            <p class="text-muted mb-0">Already have an account? 
+                <a href="{% url 'login' %}" class="text-decoration-none">Sign in</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .register-container {
+        min-height: 100vh;
+        background-color: var(--light-color);
+        background-image: url('{% static "images/fabric-pattern-light.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        padding: 2rem;
+    }
+    
+    .register-card {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        width: 100%;
+        max-width: 600px;
+    }
+    
+    .register-icon {
+        width: 48px;
+        height: 48px;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+    
+    .register-title {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .register-subtitle {
+        color: var(--accent-color);
+        margin-bottom: 2rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .input-group-text {
+        background-color: var(--light-color);
+        border-color: var(--secondary-color);
+        color: var(--primary-color);
+    }
+    
+    .toggle-password {
+        cursor: pointer;
+    }
+    
+    .toggle-password:hover {
+        background-color: var(--light-color);
+    }
+    
+    .terms-agreement {
+        font-size: 0.85rem;
+    }
+    
+    @media (max-width: 768px) {
+        .register-card {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle password visibility
+        const togglePassword = document.querySelector('.toggle-password');
+        if (togglePassword) {
+            togglePassword.addEventListener('click', function() {
+                const password = document.querySelector('#password');
+                const icon = this.querySelector('i');
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                feather.replace();
+                
+                // Change eye icon
+                if (type === 'password') {
+                    icon.setAttribute('data-feather', 'eye');
+                } else {
+                    icon.setAttribute('data-feather', 'eye-off');
+                }
+                feather.replace();
+            });
+        }
+        
+        // Auto-focus first name field
+        document.querySelector('#first_name')?.focus();
+    });
+</script>
+{% endblock %}

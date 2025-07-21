@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Add Client - Tailur{% endblock %}
+
+{% block content %}
+<div class="client-form-container">
+    <div class="client-form-card">
+        <div class="text-center mb-5">
+            <i data-feather="user-plus" class="form-icon"></i>
+            <h2 class="form-title">Add New Client</h2>
+            <p class="form-subtitle">Enter your client's details to get started</p>
+        </div>
+
+        {% if messages %}
+        <div class="alert-messages mb-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form method="POST" class="client-form">
+            {% csrf_token %}
+
+            <div class="mb-4">
+                <label for="name" class="form-label">
+                    <i data-feather="user" class="me-2"></i> Full Name
+                </label>
+                <input type="text" name="name" id="name" class="form-control" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="phone" class="form-label">
+                    <i data-feather="phone" class="me-2"></i> Phone Number
+                </label>
+                <input type="tel" name="phone" id="phone" class="form-control" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="address" class="form-label">
+                    <i data-feather="home" class="me-2"></i> Address (Optional)
+                </label>
+                <textarea name="address" id="address" rows="2" class="form-control"></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label for="gender" class="form-label">
+                    <i data-feather="users" class="me-2"></i> Gender
+                </label>
+                <select name="gender" id="gender" class="form-select" required>
+                    <option value="" disabled selected>Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i data-feather="save" class="me-2"></i> Add Client
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .client-form-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 120px);
+        padding: 2rem;
+        background-color: var(--light-color);
+        background-image: url('{% static "images/fabric-texture-light.jpg" %}');
+        background-size: cover;
+    }
+    
+    .client-form-card {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        width: 100%;
+        max-width: 600px;
+    }
+    
+    .form-icon {
+        width: 48px;
+        height: 48px;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+    
+    .form-title {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-subtitle {
+        color: var(--accent-color);
+        margin-bottom: 2rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-label i {
+        width: 18px;
+        height: 18px;
+        margin-right: 8px;
+    }
+    
+    .form-control, .form-select {
+        border: 1px solid var(--secondary-color);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(94, 74, 58, 0.25);
+    }
+    
+    textarea.form-control {
+        min-height: 100px;
+    }
+    
+    @media (max-width: 768px) {
+        .client-form-card {
+            padding: 1.5rem;
+        }
+        
+        .client-form-container {
+            padding: 1rem;
+            min-height: calc(100vh - 80px);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-focus name field
+        document.getElementById('name')?.focus();
+        
+        // Initialize phone input mask
+        const phoneInput = document.getElementById('phone');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function(e) {
+                const x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+                e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+            });
+        }
+        
+        feather.replace();
+    });
+</script>
+{% endblock %}

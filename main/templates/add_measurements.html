@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Measurements - Tailur{% endblock %}
+
+{% block content %}
+<div class="measurements-container">
+    <div class="measurements-card">
+        <div class="measurements-header">
+            <div class="d-flex align-items-center mb-3">
+                <a href="{% url 'client_profile' client.id %}" class="btn btn-outline-secondary me-3">
+                    <i data-feather="arrow-left"></i>
+                </a>
+                <h2 class="mb-0">
+                    <i data-feather="ruler" class="me-2"></i>
+                    Measurements for {{ client.name|title }}
+                </h2>
+            </div>
+            <p class="text-muted">Enter precise measurements for perfect fitting garments</p>
+        </div>
+
+        {% if messages %}
+        <div class="alert-messages mb-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" class="measurements-form">
+            {% csrf_token %}
+            
+            <div class="row">
+                <!-- Upper Body Measurements -->
+                <div class="col-md-6">
+                    <div class="measurement-section mb-4">
+                        <h5 class="section-title">
+                            <i data-feather="shirt" class="me-2"></i>
+                            Upper Body
+                        </h5>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.bust.id_for_label }}" class="form-label">Bust (inches)</label>
+                            <div class="input-group">
+                                {{ form.bust }}
+                                <span class="input-group-text">in</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.waist.id_for_label }}" class="form-label">Waist (inches)</label>
+                            <div class="input-group">
+                                {{ form.waist }}
+                                <span class="input-group-text">in</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.shoulder.id_for_label }}" class="form-label">Shoulder (inches)</label>
+                            <div class="input-group">
+                                {{ form.shoulder }}
+                                <span class="input-group-text">in</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.sleeve_length.id_for_label }}" class="form-label">Sleeve Length (inches)</label>
+                            <div class="input-group">
+                                {{ form.sleeve_length }}
+                                <span class="input-group-text">in</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lower Body Measurements -->
+                <div class="col-md-6">
+                    <div class="measurement-section mb-4">
+                        <h5 class="section-title">
+                            <i data-feather="trending-up" class="me-2"></i>
+                            Lower Body
+                        </h5>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.hips.id_for_label }}" class="form-label">Hips (inches)</label>
+                            <div class="input-group">
+                                {{ form.hips }}
+                                <span class="input-group-text">in</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.trouser_length.id_for_label }}" class="form-label">Trouser Length (inches)</label>
+                            <div class="input-group">
+                                {{ form.trouser_length }}
+                                <span class="input-group-text">in</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.top_length.id_for_label }}" class="form-label">Top Length (inches)</label>
+                            <div class="input-group">
+                                {{ form.top_length }}
+                                <span class="input-group-text">in</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.neck.id_for_label }}" class="form-label">Neck (inches)</label>
+                            <div class="input-group">
+                                {{ form.neck }}
+                                <span class="input-group-text">in</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i data-feather="save" class="me-2"></i> Save Measurements
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .measurements-container {
+        padding: 2rem;
+        background-color: var(--light-color);
+        min-height: calc(100vh - 120px);
+    }
+    
+    .measurements-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .measurements-header h2 {
+        color: var(--primary-color);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+    
+    .measurements-header h2 i {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .measurement-section {
+        background-color: rgba(200, 167, 151, 0.05);
+        padding: 1.5rem;
+        border-radius: 8px;
+        border-left: 3px solid var(--secondary-color);
+    }
+    
+    .section-title {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title i {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        border: 1px solid var(--secondary-color);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(94, 74, 58, 0.25);
+    }
+    
+    .input-group-text {
+        background-color: var(--light-color);
+        border-color: var(--secondary-color);
+        color: var(--primary-color);
+        min-width: 50px;
+        justify-content: center;
+    }
+    
+    @media (max-width: 768px) {
+        .measurements-container {
+            padding: 1rem;
+        }
+        
+        .measurements-card {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-focus first measurement field
+        document.querySelector('input[type="number"]')?.focus();
+        
+        // Initialize all measurement inputs with proper classes
+        const measurementInputs = document.querySelectorAll('input[type="number"]');
+        measurementInputs.forEach(input => {
+            input.classList.add('form-control');
+        });
+        
+        feather.replace();
+    });
+</script>
+{% endblock %}
