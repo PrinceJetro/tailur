@@ -32,7 +32,7 @@
 
         <form method="post" class="measurements-form">
             {% csrf_token %}
-            
+             {{ form.client }}          
             <div class="row">
                 <!-- Upper Body Measurements -->
                 <div class="col-md-6">
@@ -209,6 +209,9 @@
         .measurements-card {
             padding: 1.5rem;
         }
+    }
+    #id_client {
+        display: none; /* Hide client form as it's not needed here */
     }
 </style>
 {% endblock %}
