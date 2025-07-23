@@ -1,5 +1,5 @@
 env\scripts\activate
-cd personalprojects/tailur
+cd personalprojects/new/tailur
 python manage.py runserver
 
 
