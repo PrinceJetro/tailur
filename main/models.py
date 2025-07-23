@@ -44,6 +44,20 @@ class Order(models.Model):
     def __str__(self):
         return f"{self.client.name} - {self.style_name}"
 
+    def total_paid(self):
+        return sum(payment.amount for payment in self.payments.all())
+
+    def balance(self):
+        return float(self.price) - float(self.total_paid())
+
+    def payment_status(self):
+        if self.total_paid() >= self.price:
+            return 'Paid'
+        elif self.total_paid() > 0:
+            return 'Part-paid'
+        else:
+            return 'Unpaid'
+
 class Reminder(models.Model):
     order = models.OneToOneField(Order, on_delete=models.CASCADE)
     remind_at = models.DateTimeField()
@@ -51,3 +65,13 @@ class Reminder(models.Model):
 
     def __str__(self):
         return f"Reminder for {self.order}"
+
+class Payment(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='payments')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateTimeField(auto_now_add=True)
+    method = models.CharField(max_length=50, choices=[('cash', 'Cash'), ('transfer', 'Transfer'), ('pos', 'POS')], default='cash')
+    note = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Payment of ₦{self.amount} for {self.order}"

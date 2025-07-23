@@ -6,12 +6,54 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.shortcuts import render, get_object_or_404
-from .models import Client, Measurement, Order, Reminder
+from .models import Client, Measurement, Order, Reminder, Payment
 from .forms import MeasurementForm, OrderForm
-from django.http import HttpResponse
+from django import forms
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Sum
 from datetime import datetime, timedelta
+
+class PaymentForm(forms.ModelForm):
+    class Meta:
+        model = Payment
+        fields = ['amount', 'method', 'note']
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+
+
+@login_required
+def order_details_pdf(request, order_id):
+    order = get_object_or_404(Order, id=order_id, client__user=request.user)
+    payments = order.payments.all().order_by('-date')
+    total_paid = sum(p.amount for p in payments)
+    balance = float(order.price) - float(total_paid)
+    if total_paid >= order.price:
+        payment_status = 'Paid'
+    elif total_paid > 0:
+        payment_status = 'Part-paid'
+    else:
+        payment_status = 'Unpaid'
+    today = timezone.now().date()
+    order.is_overdue = order.due_date < today and order.delivery_status != 'completed'
+
+    template = get_template('order_details_pdf.html')
+    html = template.render({
+        'order': order,
+        'payments': payments,
+        'total_paid': total_paid,
+        'balance': balance,
+        'payment_status': payment_status,
+        'user': request.user,
+    })
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="order_{order.id}_details.pdf"'
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('We had some errors with PDF generation')
+    return response
 
 
 
@@ -83,10 +125,17 @@ def dashboard(request):
     orders_change = 0  # Calculate percentage change from last month
     
     # Revenue stats
-    monthly_revenue = Order.objects.filter(
+    # Total order value for the month
+    monthly_order_value = Order.objects.filter(
         client__user=request.user,
         created_at__month=datetime.now().month
     ).aggregate(Sum('price'))['price__sum'] or 0
+
+    # Payments received for the month
+    monthly_revenue = Payment.objects.filter(
+        order__client__user=request.user,
+        date__month=datetime.now().month
+    ).aggregate(Sum('amount'))['amount__sum'] or 0
     
     # Upcoming deliveries
     upcoming_deliveries = Order.objects.filter(
@@ -120,6 +169,7 @@ def dashboard(request):
         'active_orders': active_orders,
         'orders_change': orders_change,
         'monthly_revenue': monthly_revenue,
+        'monthly_order_value': monthly_order_value,
         'upcoming_deliveries': upcoming_deliveries,
         'recent_orders': recent_orders,
         'upcoming_orders': upcoming_orders,
@@ -169,17 +219,72 @@ def client_profile(request, client_id):
 
 @login_required
 def list_clients(request):
+    query = request.GET.get('q', '').strip()
     clients = Client.objects.filter(user=request.user)
-    return render(request, 'list_clients.html', {'clients': clients})
+    if query:
+        clients = clients.filter(
+            name__icontains=query
+        ) | clients.filter(
+            phone__icontains=query
+        )
+        clients = clients.distinct()
+    clients = clients.order_by('name')
+    return render(request, 'list_clients.html', {'clients': clients, 'query': query})
 
 @login_required
 def list_orders(request):
     orders = Order.objects.filter(client__user=request.user).all()
+    # Annotate each order with payment info
+    for order in orders:
+        order.total_paid = sum(p.amount for p in order.payments.all())
+        order.balance = float(order.price) - float(order.total_paid)
+        if order.total_paid >= order.price:
+            order.payment_status = 'Paid'
+        elif order.total_paid > 0:
+            order.payment_status = 'Part-paid'
+        else:
+            order.payment_status = 'Unpaid'
     return render(request, 'list_orders.html', {'orders': orders})
 
 @login_required
 def order_details(request, order_id):
-    return render(request, 'order_details.html', {'order_id': order_id})
+    order = get_object_or_404(Order, id=order_id, client__user=request.user)
+    payments = order.payments.all().order_by('-date')
+    total_paid = sum(p.amount for p in payments)
+    balance = float(order.price) - float(total_paid)
+    
+    if total_paid >= order.price:
+        payment_status = 'Paid'
+    elif total_paid > 0:
+        payment_status = 'Part-paid'
+    else:
+        payment_status = 'Unpaid'
+    
+    # Check if order is overdue
+    today = timezone.now().date()
+    order.is_overdue = order.due_date < today and order.delivery_status != 'completed'
+
+    if request.method == 'POST':
+        form = PaymentForm(request.POST)
+        if form.is_valid():
+            payment = form.save(commit=False)
+            payment.order = order
+            payment.save()
+            messages.success(request, 'Payment added successfully!')
+            return redirect('order_details', order_id=order.id)
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = PaymentForm()
+
+    return render(request, 'order_details.html', {
+        'order': order,
+        'payments': payments,
+        'total_paid': total_paid,
+        'balance': balance,
+        'payment_status': payment_status,
+        'form': form,
+    })
 
 @login_required
 def add_measurements(request, client_id):

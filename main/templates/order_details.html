@@ -1,0 +1,488 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order #{{ order.id }} - Tailur{% endblock %}
+
+{% block content %}
+<div class="order-detail-container">
+    <a href="{% url 'order_details_pdf' order.id %}" class="btn btn-outline-secondary" target="_blank">
+  <i data-feather="download"></i> Export as PDF
+</a>
+    <div class="order-header mb-5">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h2 class="order-title">
+                    <i data-feather="clipboard" class="me-2"></i>
+                    Order Details
+                </h2>
+                <div class="breadcrumb">
+                    <a href="{% url 'list_orders' %}">Orders</a>
+                    <span class="mx-2">/</span>
+                    <span>#{{ order.id }}</span>
+                </div>
+            </div>
+            <div class="order-status-badge">
+                <span class="badge bg-{% if order.delivery_status == 'completed' %}success{% else %}warning{% endif %}">
+                    {{ order.delivery_status|title }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Order Summary -->
+        <div class="col-lg-8 mb-4">
+            <div class="card order-summary-card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i data-feather="shopping-bag" class="me-2"></i>
+                        Order Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <span class="detail-label">Client</span>
+                                <span class="detail-value">
+                                    <a href="{% url 'client_profile' order.client.id %}">
+                                        {{ order.client.name|title }}
+                                    </a>
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Style Name</span>
+                                <span class="detail-value">{{ order.style_name }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Fabric Type</span>
+                                <span class="detail-value">{{ order.fabric_type|default:"-" }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <span class="detail-label">Order Date</span>
+                                <span class="detail-value">{{ order.created_at|date:"M d, Y" }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Due Date</span>
+                                <span class="detail-value {% if order.is_overdue %}text-danger{% endif %}">
+                                    {{ order.due_date|date:"M d, Y" }}
+                                    {% if order.is_overdue %}
+                                    <span class="badge bg-danger ms-2">Overdue</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Notes</span>
+                                <span class="detail-value">{{ order.notes|default:"-" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment History -->
+            <div class="card payment-history-card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <span class="mr-2">₦</span>
+                        Payment History
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if payments %}
+                    <div class="table-responsive">
+                        <table class="table payment-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Note</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                <tr>
+                                    <td>{{ payment.date|date:"M d, Y H:i" }}</td>
+                                    <td>₦{{ payment.amount }}</td>
+                                    <td>{{ payment.method|title }}</td>
+                                    <td>{{ payment.note|default:"-" }}</td>
+                                    <td class="text-end">
+                                        <a href="#" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deletePaymentModal{{ payment.id }}">
+                                            <i data-feather="trash-2"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Delete Payment Modal -->
+                                <div class="modal fade" id="deletePaymentModal{{ payment.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Confirm Deletion</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to delete this payment record?</p>
+                                                <p><strong>Amount:</strong> ₦{{ payment.amount }}</p>
+                                                <p><strong>Date:</strong> {{ payment.date|date:"M d, Y" }}</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <form method="POST" action="">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="next" value="{{ request.path }}">
+                                                    <button type="submit" class="btn btn-danger">Delete Payment</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <span style="font-size: 48px; color: rgb(94, 74, 58)">₦</span>
+                        <p class="empty-text">No payment records yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Financials & Add Payment -->
+        <div class="col-lg-4 mb-4">
+            <div class="card financial-summary-card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i data-feather="credit-card" class="me-2"></i>
+                        Financial Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="financial-item">
+                        <span class="financial-label">Order Total</span>
+                        <span class="financial-value">₦{{ order.price }}</span>
+                    </div>
+                    <div class="financial-item">
+                        <span class="financial-label">Total Paid</span>
+                        <span class="financial-value">₦{{ total_paid }}</span>
+                    </div>
+                    <div class="financial-item">
+                        <span class="financial-label">Balance</span>
+                        <span class="financial-value {% if balance > 0 %}text-danger{% else %}text-success{% endif %}">
+                            ₦{{ balance }}
+                        </span>
+                    </div>
+                    <div class="financial-item">
+                        <span class="financial-label">Payment Status</span>
+                        <span class="financial-value">
+                            <span class="badge bg-{% if balance == 0 %}success{% else %}warning{% endif %}">
+                                {{ payment_status }}
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Payment Form -->
+            <div class="card add-payment-card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i data-feather="plus" class="me-2"></i>
+                        Add Payment
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ form.amount.id_for_label }}" class="form-label">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₦</span>
+                                {{ form.amount }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.method.id_for_label }}" class="form-label">Payment Method</label>
+                            {{ form.method }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.note.id_for_label }}" class="form-label">Note (Optional)</label>
+                            {{ form.note }}
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i data-feather="save" class="me-1"></i> Record Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Order Actions -->
+            <div class="card order-actions-card mt-4">
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="" class="btn btn-outline-primary">
+                            <i data-feather="edit" class="me-1"></i> Edit Order
+                        </a>
+                        <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteOrderModal">
+                            <i data-feather="trash-2" class="me-1"></i> Delete Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Order Modal -->
+<div class="modal fade" id="deleteOrderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Order Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this order?</p>
+                <p><strong>Client:</strong> {{ order.client.name }}</p>
+                <p><strong>Style:</strong> {{ order.style_name }}</p>
+                <p class="text-danger"><strong>Warning:</strong> All payment records will also be deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete Order</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-detail-container {
+        padding: 2rem;
+        background-color: var(--light-color);
+        min-height: calc(100vh - 120px);
+    }
+    
+    .order-title {
+        color: var(--primary-color);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+    
+    .order-title i {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .breadcrumb {
+        font-size: 0.9rem;
+        color: var(--secondary-color);
+    }
+    
+    .breadcrumb a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+    
+    .order-status-badge .badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1.25rem 1.5rem;
+    }
+    
+    .card-title {
+        color: var(--primary-color);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        margin-bottom: 0;
+    }
+    
+    .card-title i {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .detail-item {
+        margin-bottom: 1.25rem;
+    }
+    
+    .detail-label {
+        font-weight: 500;
+        color: var(--dark-color);
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    
+    .detail-value {
+        color: var(--accent-color);
+    }
+    
+    .detail-value a {
+        color: inherit;
+        text-decoration: none;
+    }
+    
+    .detail-value a:hover {
+        color: var(--primary-color);
+        text-decoration: underline;
+    }
+    
+    .payment-table {
+        margin-bottom: 0;
+    }
+    
+    .payment-table th {
+        font-weight: 500;
+        color: var(--primary-color);
+        background-color: rgba(200, 167, 151, 0.1);
+    }
+    
+    .payment-table td, .payment-table th {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 2rem 1rem;
+    }
+    
+    .empty-icon {
+        width: 40px;
+        height: 40px;
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+    }
+    
+    .empty-text {
+        color: var(--secondary-color);
+    }
+    
+    .financial-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .financial-item:last-child {
+        border-bottom: none;
+    }
+    
+    .financial-label {
+        font-weight: 500;
+        color: var(--dark-color);
+    }
+    
+    .financial-value {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border: 1px solid var(--secondary-color);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(94, 74, 58, 0.25);
+    }
+    
+    .input-group-text {
+        background-color: var(--light-color);
+        border-color: var(--secondary-color);
+        color: var(--primary-color);
+    }
+    
+    .order-actions-card .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .order-actions-card .btn i {
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+    }
+    
+    @media (max-width: 992px) {
+        .payment-table {
+            display: block;
+            width: 100%;
+            overflow-x: auto;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .order-detail-container {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        feather.replace();
+        
+        // Initialize all form inputs with proper classes
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            if (input.tagName === 'SELECT') {
+                input.classList.add('form-select');
+            } else if (input.tagName === 'TEXTAREA') {
+                input.classList.add('form-control');
+            } else {
+                input.classList.add('form-control');
+            }
+        });
+        
+        // Auto-focus amount field
+        document.getElementById('{{ form.amount.id_for_label }}')?.focus();
+    });
+</script>
+{% endblock %}

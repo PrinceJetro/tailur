@@ -30,6 +30,9 @@
 
     <div class="clients-list">
         {% if clients %}
+        <form action="">
+            <input type="search" name="q" id="" class="form-control mb-4" placeholder="Search Clients..." aria-label="Search Clients" value="{{ request.GET.q|default_if_none:'' }}">
+        </form>
         <div class="row">
             {% for client in clients %}
             <div class="col-md-6 col-lg-4 mb-4">

@@ -52,6 +52,9 @@
                         <th>Fabric</th>
                         <th>Price</th>
                         <th>Due Date</th>
+                        <th>Payment Status</th>
+                        <th>Total Paid</th>
+                        <th>Balance</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -64,8 +67,12 @@
                                 <div class="client-avatar me-2">
                                     <i data-feather="user"></i>
                                 </div>
-                                <div>
-                                    <strong>{{ order.client.name|title }}</strong>
+                                <div>                                    
+                                    <strong>
+                                        <a href="{% url 'order_details' order.id %}">
+                                            {{ order.client.name|title }}
+                                        </a>
+                                    </strong>
                                     <div class="text-muted small">{{ order.client.phone }}</div>
                                 </div>
                             </div>
@@ -89,6 +96,13 @@
                             </div>
                         </td>
                         <td>
+                            <span class="badge {% if order.payment_status == 'Paid' %}bg-success{% elif order.payment_status == 'Part-paid' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                {{ order.payment_status }}
+                            </span>
+                        </td>
+                        <td>₦{{ order.total_paid }}</td>
+                        <td>₦{{ order.balance }}</td>
+                        <td>
                             <form action="{% url 'update_order' order.id %}" method="post" class="status-form">
                                 {% csrf_token %}
                                 <select name="delivery_status" class="form-select status-select {% if order.delivery_status == 'completed' %}bg-success-light text-success{% else %}bg-warning-light text-warning{% endif %}" onchange="this.form.submit()">
@@ -99,6 +113,9 @@
                         </td>
                         <td>
                             <div class="d-flex">
+                                <a href="{% url 'order_details' order.id %}" class="btn btn-sm btn-outline-primary me-1" title="View / Add Payment">
+                                    <i data-feather="credit-card"></i> Payment
+                                </a>
                                 <a href="" class="btn btn-sm btn-outline-secondary me-1" title="Edit">
                                     <i data-feather="edit-2"></i>
                                 </a>

@@ -14,4 +14,6 @@ urlpatterns = [
     path('add_measurements/<int:client_id>', views.add_measurements, name='add_measurements'),  # Add measurements URL
     path('add_order/', views.add_order, name='add_order'),  # Add order URL
     path('orders/<int:order_id>/update/', views.update_order, name='update_order'),
+    path('order_details/<int:order_id>/', views.order_details, name='order_details'),  # Order details URL
+    path('orders/<int:order_id>/pdf/', views.order_details_pdf, name='order_details_pdf'),
 ]
