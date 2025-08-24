@@ -30,6 +30,6 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = ('order', 'amount', 'date', 'method', 'note')
+    list_display = ('order', 'amount', 'payment_date', 'method', 'note')
     search_fields = ('order__client__name', 'method')
-    list_filter = ('date', 'method')
+    list_filter = ('payment_date', 'method')

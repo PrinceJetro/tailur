@@ -11,23 +11,25 @@ from .forms import MeasurementForm, OrderForm
 from django import forms
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.db.models import Count, Sum
 from datetime import datetime, timedelta
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+
 
 class PaymentForm(forms.ModelForm):
     class Meta:
         model = Payment
         fields = ['amount', 'method', 'note']
 
-from django.http import HttpResponse
-from django.template.loader import get_template
-from xhtml2pdf import pisa
 
 
 @login_required
 def order_details_pdf(request, order_id):
     order = get_object_or_404(Order, id=order_id, client__user=request.user)
-    payments = order.payments.all().order_by('-date')
+    payments = order.payments.all().order_by('-payment_date')
     total_paid = sum(p.amount for p in payments)
     balance = float(order.price) - float(total_paid)
     if total_paid >= order.price:
@@ -134,7 +136,7 @@ def dashboard(request):
     # Payments received for the month
     monthly_revenue = Payment.objects.filter(
         order__client__user=request.user,
-        date__month=datetime.now().month
+        payment_date__month=datetime.now().month
     ).aggregate(Sum('amount'))['amount__sum'] or 0
     
     # Upcoming deliveries
@@ -249,7 +251,7 @@ def list_orders(request):
 @login_required
 def order_details(request, order_id):
     order = get_object_or_404(Order, id=order_id, client__user=request.user)
-    payments = order.payments.all().order_by('-date')
+    payments = order.payments.all().order_by('-payment_date')
     total_paid = sum(p.amount for p in payments)
     balance = float(order.price) - float(total_paid)
     
@@ -266,7 +268,9 @@ def order_details(request, order_id):
 
     if request.method == 'POST':
         form = PaymentForm(request.POST)
+        print(form)
         if form.is_valid():
+            print("here")
             payment = form.save(commit=False)
             payment.order = order
             payment.save()
@@ -342,3 +346,33 @@ def update_order(request, order_id):
         return redirect('list_orders')
 
 
+@require_POST
+def delete_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    order.delete()
+    messages.success(request, "Order deleted successfully!")
+    return redirect('list_orders')
+
+
+# def list_payments(request):
+#     payments = Payment.objects.filter(order__client__user=request.user).order_by('-payment_date')
+#     return render(request, 'list_payments.html', {'payments': payments})
+
+# def add_payment(request):
+#     # Only show orders belonging to the logged-in user
+#     user_orders = Order.objects.filter(client__user=request.user)
+#     class UserPaymentForm(PaymentForm):
+#         def __init__(self, *args, **kwargs):
+#             super().__init__(*args, **kwargs)
+#             self.fields['order'].queryset = user_orders
+#     if request.method == 'POST':
+#         form = UserPaymentForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, "Payment added successfully!")
+#             return redirect('list_payments')
+#         else:
+#             messages.error(request, "There was an error with the form.")
+#     else:
+#         form = UserPaymentForm()
+#     return render(request, 'add_payment.html', {'form': form})

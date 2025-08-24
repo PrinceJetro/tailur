@@ -69,9 +69,13 @@ class Reminder(models.Model):
 class Payment(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='payments')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateTimeField(auto_now_add=True)
-    method = models.CharField(max_length=50, choices=[('cash', 'Cash'), ('transfer', 'Transfer'), ('pos', 'POS')], default='cash')
-    note = models.TextField(blank=True, null=True)
+    payment_date = models.DateTimeField(auto_now_add=True)  # already fixed
+    method = models.CharField(
+        max_length=50,
+        choices=[('cash', 'Cash'), ('transfer', 'Transfer'), ('pos', 'POS')],
+        default='cash'
+    )
+    note = models.TextField(blank=True, null=True)  # <-- match DB column name
 
     def __str__(self):
         return f"Payment of ₦{self.amount} for {self.order}"
